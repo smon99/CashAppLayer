@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><title>CashApp</title></head>
+
+Angemeldet als: {{ activeUser }}
+<form method="post" action="?page=transaction">
+    <button type="submit" name="logout">Abmelden</button>
+</form>
+
+<a href="http://0.0.0.0:8000/?page=feature">
+    <button>features</button>
+</a>
+
+<br><br>
+{% if success is defined %}
+    {{ success }}
+{% endif %}
+{% if error is defined and error is not empty %}
+    <br>{{ error }}
+    Fehler! Die Transaktion wurde nicht gespeichert!<br>
+{% endif %}
+<br>
+
+Kontostand: {{ balance }} €
+
+<br><br>
+
+<h1>
+    Geld überweisen
+</h1>
+
+<form action="?page=transaction" method="POST">
+    Betrag: <input type="text" name="amount"> <br>
+    Empfänger: <input type="text" name="receiver"> <br>
+    <input type="submit" value="Überweisen" name="transfer">
+</form>
+
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><title>Login</title></head>
+
+<h1>
+    {{ pageTitle }}
+</h1>
+
+<form action='?page=login' method='POST'>
+    E-Mail: <input type='text' name='mail'> <br>
+    Passwort: <input type='password' name='password'> <br>
+    <input type='submit' value='Einloggen' name="login">
+</form>
+
+<br><br>
+
+<a href="http://0.0.0.0:8000/?page=user">
+    <button>Registrieren</button>
+</a>
+
+</html>

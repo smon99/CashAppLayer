@@ -1,0 +1,11 @@
+# File: docker-compose.yml
+version: '3.7'
+
+services:
+  database:
+    image: 'mysql:8'
+    environment:
+      MYSQL_ROOT_PASSWORD: nexus123
+      MYSQL_DATABASE: cash
+    ports:
+      - '3336:3306'

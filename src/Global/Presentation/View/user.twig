@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Registrierung</title>
+</head>
+<body>
+<h1>Registrierung</h1>
+
+{% if error is defined %} {{ error }} {% endif %} <br>
+
+<form action='?page=user' method='POST'>
+    Name: <input type='text' name='username' value='{{ tempUserName }}'><br>
+    Email: <input type='text' name='email' value='{{ tempMail }}'><br>
+    Passwort: <input type='text' name='password' value='{{ tempPassword }}'><br>
+    <input type='submit' value='Registrieren' name="register">
+</form>
+
+<br><br>
+<a href="http://0.0.0.0:8000/?page=account">
+    <button>Anmelden</button>
+</a>
+
+</body>
+</html>

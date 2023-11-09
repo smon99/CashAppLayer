@@ -1,1 +1,6 @@
 .idea
+/vendor
+/coverage
+/.phpunit.cache
+XDEBUG_MODE=coverage
+/infection
