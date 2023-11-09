@@ -2,9 +2,9 @@
 
 namespace App\Components\Account\Communication;
 
-use App\Components\Account\Business\AccountValidation;
-use App\Components\Account\Business\AccountValidationException;
 use App\Components\Account\Business\InputTransformer;
+use App\Components\Account\Business\Validation\AccountValidation;
+use App\Components\Account\Business\Validation\AccountValidationException;
 use App\Components\Account\Persistence\AccountEntityManager;
 use App\Components\Account\Persistence\AccountRepository;
 use App\Global\Business\Container;

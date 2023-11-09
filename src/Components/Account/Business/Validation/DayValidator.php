@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace App\Components\Account\Business;
+namespace App\Components\Account\Business\Validation;
 
 use App\Components\Account\Persistence\AccountRepository;
 use App\Global\Persistence\AccountMapper;
