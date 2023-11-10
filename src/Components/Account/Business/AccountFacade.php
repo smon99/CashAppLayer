@@ -5,29 +5,26 @@ namespace App\Components\Account\Business;
 use App\Components\Account\Business\Validation\AccountValidation;
 use App\Components\Account\Persistence\AccountEntityManager;
 use App\Components\Account\Persistence\AccountRepository;
-use App\Global\Business\Container;
+use App\Components\User\Persistence\UserRepository;
 use App\Global\Business\Redirect;
 use App\Global\Business\Session;
 use App\Global\Persistence\AccountDTO;
-use Exception;
+use App\Global\Persistence\UserDTO;
 
 class AccountFacade
 {
-    private Session $session;
-    private AccountRepository $accountRepository;
-    private AccountEntityManager $accountEntityManager;
-    private AccountValidation $accountValidation;
-    private InputTransformer $inputTransformer;
-    private Redirect $redirect;
-
-    public function __construct(Container $container)
+    public function __construct(
+        private Session              $session,
+        private AccountRepository    $accountRepository,
+        private UserRepository       $userRepository,
+        private AccountEntityManager $accountEntityManager,
+        private AccountValidation    $accountValidation,
+        private InputTransformer     $inputTransformer,
+        private Redirect             $redirect,
+        private PrepareDeposit       $prepareDeposit,
+        private PrepareTransaction   $prepareTransaction
+    )
     {
-        $this->session = $container->get(Session::class);
-        $this->accountRepository = $container->get(AccountRepository::class);
-        $this->accountEntityManager = $container->get(AccountEntityManager::class);
-        $this->accountValidation = $container->get(AccountValidation::class);
-        $this->inputTransformer = $container->get(InputTransformer::class);
-        $this->redirect = $container->get(Redirect::class);
     }
 
     public function getSessionLoginStatus(): bool
@@ -45,9 +42,29 @@ class AccountFacade
         return $this->session->getUserID();
     }
 
+    public function performLogout(): void
+    {
+        $this->session->logout();
+    }
+
     public function calculateBalance(): float
     {
         return $this->accountRepository->calculateBalance($this->getSessionUserID());
+    }
+
+    public function getTransactionsPerUserID(int $userID): array
+    {
+        return $this->accountRepository->transactionPerUserID($userID);
+    }
+
+    public function getFindByMail(string $mail): UserDTO
+    {
+        return $this->userRepository->findByMail($mail);
+    }
+
+    public function getFindByUsername(string $username): UserDTO
+    {
+        return $this->userRepository->findByUsername($username);
     }
 
     public function saveDepositViaEntityManager(AccountDTO $accountDTO): void
@@ -55,14 +72,9 @@ class AccountFacade
         $this->accountEntityManager->saveDeposit($accountDTO);
     }
 
-    public function performValidation(float $value, int $userID): ?string
+    public function performValidation(float $value, int $userID): void
     {
-        try {
-            $this->accountValidation->collectErrors($value, $userID);
-        } catch (Exception $e) {
-            return $e->getMessage();
-        }
-        return null;
+        $this->accountValidation->collectErrors($value, $userID);
     }
 
     public function transformInput(string $input): float
@@ -73,5 +85,15 @@ class AccountFacade
     public function redirectTo(string $url): void
     {
         $this->redirect->redirectTo($url);
+    }
+
+    public function prepareDepositAccountDTO(float $value, int $userID): AccountDTO
+    {
+        return $this->prepareDeposit->prepareDeposit($value, $userID);
+    }
+
+    public function prepareTransaction(float $value, UserDTO $userDTO, UserDTO $receiverDTO): array
+    {
+        return $this->prepareTransaction->prepareTransaction($value, $userDTO, $receiverDTO);
     }
 }

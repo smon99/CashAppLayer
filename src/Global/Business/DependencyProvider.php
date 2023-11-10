@@ -2,7 +2,10 @@
 
 namespace App\Global\Business;
 
+use App\Components\Account\Business\AccountFacade;
 use App\Components\Account\Business\InputTransformer;
+use App\Components\Account\Business\PrepareDeposit;
+use App\Components\Account\Business\PrepareTransaction;
 use App\Components\Account\Business\Validation\AccountValidation;
 use App\Components\Account\Business\Validation\DayValidator;
 use App\Components\Account\Business\Validation\HourValidator;
@@ -26,10 +29,13 @@ class DependencyProvider
     public function provide(Container $container): void
     {
         $container->set(View::class, new View(__DIR__ . '/../Presentation/View'));
-        $container->set(Redirect::class, new Redirect(new RedirectRecordings()));
+        $container->set(RedirectRecordings::class, new RedirectRecordings());
+        $container->set(Redirect::class, new Redirect($container->get(RedirectRecordings::class)));
         $container->set(Session::class, new Session());
         $container->set(InputTransformer::class, new InputTransformer());
         $container->set(SqlConnector::class, new SqlConnector());
+        $container->set(PrepareDeposit::class, new PrepareDeposit());
+        $container->set(PrepareTransaction::class, new PrepareTransaction());
 
         //Mapper
         $container->set(UserMapper::class, new UserMapper());
@@ -55,5 +61,18 @@ class DependencyProvider
         $container->set(PasswordValidator::class, new PasswordValidator());
         $container->set(UserDuplicationValidator::class, new UserDuplicationValidator());
         $container->set(UserValidation::class, new UserValidation($container->get(EmptyFieldValidator::class), $container->get(EMailValidator::class), $container->get(PasswordValidator::class), $container->get(UserDuplicationValidator::class)));
+
+        //AccountFacade
+        $container->set(AccountFacade::class, new AccountFacade(
+            $container->get(Session::class),
+            $container->get(AccountRepository::class),
+            $container->get(UserRepository::class),
+            $container->get(AccountEntityManager::class),
+            $container->get(AccountValidation::class),
+            $container->get(InputTransformer::class),
+            $container->get(Redirect::class),
+            $container->get(PrepareDeposit::class),
+            $container->get(PrepareTransaction::class),
+        ));
     }
 }

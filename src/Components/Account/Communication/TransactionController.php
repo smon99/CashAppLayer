@@ -2,95 +2,63 @@
 
 namespace App\Components\Account\Communication;
 
-use App\Components\Account\Business\InputTransformer;
-use App\Components\Account\Business\Validation\AccountValidation;
+use App\Components\Account\Business\AccountFacade;
 use App\Components\Account\Business\Validation\AccountValidationException;
-use App\Components\Account\Persistence\AccountEntityManager;
-use App\Components\Account\Persistence\AccountRepository;
-use App\Components\User\Persistence\UserRepository;
 use App\Global\Business\Container;
-use App\Global\Business\Redirect;
-use App\Global\Business\Session;
 use App\Global\Communication\ControllerInterface;
-use App\Global\Persistence\AccountDTO;
 use App\Global\Presentation\View;
 
 class TransactionController implements ControllerInterface
 {
     private View $view;
-    private AccountEntityManager $accountEntityManager;
-    private AccountRepository $accountRepository;
-    private UserRepository $userRepository;
-    public Redirect $redirect;
-    private Session $session;
-    private AccountValidation $accountValidation;
-    private InputTransformer $inputTransformer;
+    private AccountFacade $accountFacade;
     private $success;
 
     public function __construct(Container $container)
     {
         $this->view = $container->get(View::class);
-        $this->redirect = $container->get(Redirect::class);
-        $this->accountEntityManager = $container->get(AccountEntityManager::class);
-        $this->accountRepository = $container->get(AccountRepository::class);
-        $this->accountValidation = $container->get(AccountValidation::class);
-        $this->userRepository = $container->get(UserRepository::class);
-        $this->session = $container->get(Session::class);
-        $this->inputTransformer = $container->get(InputTransformer::class);
+        $this->accountFacade = $container->get(AccountFacade::class);
     }
 
     public function action(): View
     {
-        if (!$this->session->loginStatus()) {
-            $this->redirect->redirectTo('http://0.0.0.0:8000/?page=login');
-        }
-
         $activeUser = null;
         $balance = null;
         $error = null;
 
-        if ($this->session->loginStatus()) {
-            $loginStatus = $this->session->loginStatus();
-            $activeUser = $this->session->getUserName();
-            $balance = $this->accountRepository->calculateBalance($this->session->getUserID());
+        if (!$this->accountFacade->getSessionLoginStatus()) {
+            $this->accountFacade->redirectTo('http://0.0.0.0:8000/?page=login');
+        }
+
+        if (isset($_POST["logout"])) {
+            $this->accountFacade->performLogout();
+            $this->accountFacade->redirectTo('http://0.0.0.0:8000/?page=login');
         }
 
         if (isset($_POST["transfer"])) {
             try {
-                $receiver = $this->userRepository->findByMail($_POST["receiver"]);
-                $validateThis = $this->inputTransformer->transformInput($_POST["amount"]);
-                $this->accountValidation->collectErrors($validateThis, $this->session->getUserID());
-                $amount = $validateThis;
+                $receiver = $this->accountFacade->getFindByMail($_POST["receiver"]);
+                $validateThis = $this->accountFacade->transformInput($_POST["amount"]);
+
+                $this->accountFacade->performValidation($validateThis, $this->accountFacade->getSessionUserID());
 
                 if ($receiver === null) {
                     $error = 'Empfänger existiert nicht! ';
                     $this->view->addParameter('error', $error);
                 }
 
-                if ($amount > $balance) {
+                if ($validateThis > $balance) {
                     $error = 'Guthaben zu gering! ';
                     $this->view->addParameter('error', $error);
                 }
 
                 if ($error === null) {
-                    $date = date('Y-m-d');
-                    $time = date('H:i:s');
+                    $senderDTO = $this->accountFacade->getFindByUsername($this->accountFacade->getSessionUserName());
+                    $receiverDTO = $receiver;
+                    $transaction = $this->accountFacade->prepareTransaction($validateThis, $senderDTO, $receiverDTO);
 
-                    $saveSender = new AccountDTO();
-                    $saveSender->value = $amount * (-1);
-                    $saveSender->userID = $this->session->getUserID();
-                    $saveSender->transactionDate = $date;
-                    $saveSender->transactionTime = $time;
-                    $saveSender->purpose = 'Geldtransfer an ' . $receiver->username;
-                    $this->accountEntityManager->saveDeposit($saveSender);
-
-                    $saveReceiver = new AccountDTO();
-                    $saveReceiver->value = $amount;
-                    $saveReceiver->userID = $receiver->userID;
-                    $saveReceiver->transactionDate = $date;
-                    $saveReceiver->transactionTime = $time;
-                    $saveReceiver->purpose = 'Zahlung erhalten von ' . $this->session->getUserName();
-                    $this->accountEntityManager->saveDeposit($saveReceiver);
+                    $this->accountFacade->saveDepositViaEntityManager($transaction["sender"]);
+                    $this->accountFacade->saveDepositViaEntityManager($transaction["receiver"]);
 
                     $this->success = "Die Transaktion wurde erfolgreich durchgeführt!";
                 }
@@ -100,14 +68,14 @@ class TransactionController implements ControllerInterface
             }
         }
 
-        if (isset($_POST["logout"])) {
-            $this->session->logout();
-            $this->redirect->redirectTo('http://0.0.0.0:8000/?page=login');
+        if ($this->accountFacade->getSessionLoginStatus()) {
+            $activeUser = $this->accountFacade->getSessionUserName();
+            $balance = $this->accountFacade->calculateBalance();
         }
 
         $this->view->addParameter('activeUser', $activeUser);
         $this->view->addParameter('balance', $balance);
-        $this->view->addParameter('loginStatus', $this->session->loginStatus());
+        $this->view->addParameter('loginStatus', $this->accountFacade->getSessionLoginStatus());
         $this->view->addParameter('success', $this->success);
 
         $this->view->setTemplate('transaction.twig');
