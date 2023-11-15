@@ -18,6 +18,7 @@ use App\Components\UserReg\Business\EMailValidator;
 use App\Components\UserReg\Business\EmptyFieldValidator;
 use App\Components\UserReg\Business\PasswordValidator;
 use App\Components\UserReg\Business\UserDuplicationValidator;
+use App\Components\UserReg\Business\UserRegFacade;
 use App\Components\UserReg\Business\UserValidation;
 use App\Global\Persistence\AccountMapper;
 use App\Global\Persistence\SqlConnector;
@@ -73,6 +74,13 @@ class DependencyProvider
             $container->get(Redirect::class),
             $container->get(PrepareDeposit::class),
             $container->get(PrepareTransaction::class),
+        ));
+
+        //UserRegFacade
+        $container->set(UserRegFacade::class, new UserRegFacade(
+            $container->get(UserEntityManager::class),
+            $container->get(UserValidation::class),
+            $container->get(Redirect::class),
         ));
     }
 }
