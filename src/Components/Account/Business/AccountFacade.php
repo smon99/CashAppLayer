@@ -57,12 +57,12 @@ class AccountFacade
         return $this->accountRepository->transactionPerUserID($userID);
     }
 
-    public function getFindByMail(string $mail): UserDTO
+    public function getFindByMail(string $mail): ?UserDTO
     {
         return $this->userRepository->findByMail($mail);
     }
 
-    public function getFindByUsername(string $username): UserDTO
+    public function getFindByUsername(string $username): ?UserDTO
     {
         return $this->userRepository->findByUsername($username);
     }

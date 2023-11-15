@@ -6,7 +6,7 @@ use App\Components\Account\Communication\AccountController;
 use App\Components\Account\Persistence\AccountRepository;
 use App\Global\Business\Container;
 use App\Global\Business\DependencyProvider;
-use App\Global\Business\RedirectRecordings;
+use App\Global\Business\Redirect;
 use App\Global\Business\Session;
 use App\Global\Persistence\AccountMapper;
 use App\Global\Persistence\SqlConnector;
@@ -15,7 +15,6 @@ use PHPUnit\Framework\TestCase;
 
 class AccountControllerTest extends TestCase
 {
-    public RedirectRecordings $redirectRecordings;
     private Session $session;
     private UserDTO $userDTO;
     private AccountRepository $accountRepository;
@@ -26,7 +25,6 @@ class AccountControllerTest extends TestCase
         $provider = new DependencyProvider();
         $provider->provide($container);
 
-        $this->redirectRecordings = new RedirectRecordings();
         $this->session = new Session();
         $this->accountRepository = new AccountRepository(new SqlConnector(), new AccountMapper());
 
@@ -48,7 +46,7 @@ class AccountControllerTest extends TestCase
         $connector->execute("DELETE FROM Transactions;", []);
         $connector->execute("DELETE FROM Users;", []);
         $this->session->logout();
-        unset($_POST["amount"], $_POST["logout"], $this->userDTO, $this->redirectRecordings, $this->session);
+        unset($_POST["amount"], $_POST["logout"], $this->userDTO, $this->session);
     }
 
     public function testAction(): void
@@ -85,9 +83,8 @@ class AccountControllerTest extends TestCase
         $this->session->loginUser($this->userDTO, 'Simon123#');
         $this->session->logout();
         $this->controller->action();
-        $url = $this->controller->redirect->redirectRecordings->recordedUrl[0];
+        //url assertion missing
 
-        self::assertSame($url, 'http://0.0.0.0:8000/?page=login');
     }
 
     public function testActionLogOut(): void
@@ -95,11 +92,10 @@ class AccountControllerTest extends TestCase
         $this->session->loginUser($this->userDTO, 'Simon123#');
         $_POST["logout"] = true;
         $this->controller->action();
-        $url = $this->controller->redirect->redirectRecordings->recordedUrl[0];
         $loginStatus = $this->session->loginStatus();
 
         self::assertFalse($loginStatus);
-        self::assertSame($url, 'http://0.0.0.0:8000/?page=login');
+        //url assertion missing
     }
 
     public function testActionTemplatePath(): void

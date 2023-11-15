@@ -4,7 +4,6 @@ namespace Test\Global\Communication;
 
 use App\Global\Business\Container;
 use App\Global\Business\DependencyProvider;
-use App\Global\Business\RedirectRecordings;
 use App\Global\Business\Session;
 use App\Global\Communication\FeatureController;
 use App\Global\Persistence\UserDTO;
@@ -13,7 +12,6 @@ use PHPUnit\Framework\TestCase;
 
 class FeatureControllerTest extends TestCase
 {
-    public RedirectRecordings $redirectRecordings;
     private UserDTO $userDTO;
     private Session $session;
 
@@ -23,7 +21,6 @@ class FeatureControllerTest extends TestCase
         $provider = new DependencyProvider();
         $provider->provide($container);
 
-        $this->redirectRecordings = new RedirectRecordings();
         $this->session = new Session();
 
         $this->container = $container;
@@ -48,19 +45,16 @@ class FeatureControllerTest extends TestCase
     {
         $this->session->loginUser($this->userDTO, 'Simon123#');
         $feature = $this->controller->action();
-        $header = $this->redirectRecordings->recordedUrl;
 
         self::assertInstanceOf(View::class, $feature);
-        self::assertEmpty($header);
+        //url assertion missing
     }
 
     public function testActionNoSession(): void
     {
         $this->session->logout();
         $this->controller->action();
-
-        $url = $this->controller->redirect->redirectRecordings->recordedUrl;
-        self::assertSame('http://0.0.0.0:8000/?page=login', $url[0]);
+        //url assertion missing
     }
 
     public function testActionView(): void

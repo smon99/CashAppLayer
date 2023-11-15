@@ -39,6 +39,7 @@ class TransactionController implements ControllerInterface
             try {
                 $receiver = $this->accountFacade->getFindByMail($_POST["receiver"]);
                 $validateThis = $this->accountFacade->transformInput($_POST["amount"]);
+                $balance = $this->accountFacade->calculateBalance();
 
                 $this->accountFacade->performValidation($validateThis, $this->accountFacade->getSessionUserID());
 

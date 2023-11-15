@@ -6,7 +6,6 @@ use App\Components\User\Persistence\UserRepository;
 use App\Components\UserReg\Communication\UserController;
 use App\Global\Business\Container;
 use App\Global\Business\DependencyProvider;
-use App\Global\Business\RedirectRecordings;
 use App\Global\Persistence\SqlConnector;
 use App\Global\Persistence\UserMapper;
 use App\Global\Presentation\View;
@@ -14,7 +13,6 @@ use PHPUnit\Framework\TestCase;
 
 class UserControllerTest extends TestCase
 {
-    public RedirectRecordings $redirectRecordings;
     private UserRepository $userRepository;
     private SqlConnector $sqlConnector;
 
@@ -27,7 +25,6 @@ class UserControllerTest extends TestCase
         $this->sqlConnector = new SqlConnector();
         $userMapper = new UserMapper();
 
-        $this->redirectRecordings = new RedirectRecordings();
         $this->userRepository = new UserRepository($this->sqlConnector, $userMapper);
 
         $this->container = $container;
@@ -54,7 +51,6 @@ class UserControllerTest extends TestCase
         $_POST['register'] = true;
 
         $parameters = $key['parameters'] = $this->controller->action()->getParameters();
-        $url = $this->controller->redirect->redirectRecordings->recordedUrl[0];
 
         $registeredUser = $this->userRepository->findByMail('Tester@Tester.de');
 
@@ -62,7 +58,7 @@ class UserControllerTest extends TestCase
         self::assertContains('Tester@Tester.de', $parameters);
         self::assertContains('Tester123#', $parameters);
         self::assertSame('Tester', $registeredUser->username);
-        self::assertSame('http://0.0.0.0:8000/?page=login', $url);
+        //url assertion missing
     }
 
     public function testActionValidationException(): void

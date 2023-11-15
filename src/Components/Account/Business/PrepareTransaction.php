@@ -13,13 +13,13 @@ class PrepareTransaction
         $receiver = new AccountDTO();
 
         $sender->userID = $userDTO->userID;
-        $sender->purpose = 'Geldtransfer an ';
+        $sender->purpose = 'Geldtransfer an ' . $receiverDTO->username;
         $sender->transactionTime = date('H:i:s');
         $sender->transactionDate = date('Y-m-d');
         $sender->value = $value * (-1);
 
         $receiver->userID = $receiverDTO->userID;
-        $receiver->purpose = 'Zahlung erhalten von ';
+        $receiver->purpose = 'Zahlung erhalten von ' . $userDTO->username;
         $receiver->transactionTime = date('H:i:s');
         $receiver->transactionDate = date('Y-m-d');
         $receiver->value = $value;
