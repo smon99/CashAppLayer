@@ -31,8 +31,7 @@ class DependencyProvider
     public function provide(Container $container): void
     {
         $container->set(View::class, new View(__DIR__ . '/../Presentation/View'));
-        $container->set(RedirectRecordings::class, new RedirectRecordings());
-        $container->set(Redirect::class, new Redirect($container->get(RedirectRecordings::class)));
+        $container->set(Redirect::class, new Redirect());
         $container->set(Session::class, new Session());
         $container->set(InputTransformer::class, new InputTransformer());
         $container->set(SqlConnector::class, new SqlConnector());
