@@ -14,6 +14,7 @@ use App\Components\Account\Persistence\AccountEntityManager;
 use App\Components\Account\Persistence\AccountRepository;
 use App\Components\User\Persistence\UserEntityManager;
 use App\Components\User\Persistence\UserRepository;
+use App\Components\UserLog\Buisness\UserLogFacade;
 use App\Components\UserReg\Business\EMailValidator;
 use App\Components\UserReg\Business\EmptyFieldValidator;
 use App\Components\UserReg\Business\PasswordValidator;
@@ -80,6 +81,13 @@ class DependencyProvider
         $container->set(UserRegFacade::class, new UserRegFacade(
             $container->get(UserEntityManager::class),
             $container->get(UserValidation::class),
+            $container->get(Redirect::class),
+        ));
+
+        //UserLogFacade
+        $container->set(UserLogFacade::class, new UserLogFacade(
+            $container->get(UserRepository::class),
+            $container->get(Session::class),
             $container->get(Redirect::class),
         ));
     }
